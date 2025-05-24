@@ -4,8 +4,10 @@ import { toast } from 'react-toastify';
 import MapPicker from '../MapPicker';
 import WilayahSelector from '../WilayahSelector';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom';
 
-const AddAndUpdatePendatang = ({isEdit, editId ,onClose}) => {
+const AddAndUpdatePendatang = ({isEdit}) => {
   const [formData, setFormData] = useState({
     nama_lengkap: '',
     no_ktp: '',
@@ -35,10 +37,11 @@ const AddAndUpdatePendatang = ({isEdit, editId ,onClose}) => {
   const [tujuanDatang, setTujuanDatang] = useState([]);
   const navigate = useNavigate()
   const url = localStorage.getItem('role')
+  const {id} = useParams();
 
   useEffect(() => {
-    if (isEdit && editId) {
-      api.get(`/dashboard/pendatang/${editId}/`)
+    if (isEdit && id) {
+      api.get(`/dashboard/pendatang/${id}/`)
         .then((res) => setFormData(res.data))
         .catch((err) => {
           console.log(err);
@@ -46,7 +49,7 @@ const AddAndUpdatePendatang = ({isEdit, editId ,onClose}) => {
         });
     }
     fetchTujuanDatang();
-  }, [isEdit, editId]);
+  }, [isEdit, id]);
 
   const fetchTujuanDatang = async () => {
     try {
@@ -75,26 +78,29 @@ const AddAndUpdatePendatang = ({isEdit, editId ,onClose}) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = new FormData();
+
     for (const key in formData) {
-      if (formData[key] !== null && formData[key] !== '') {
-        data.append(key, formData[key]);
+      const value = formData[key];
+  
+      if (value === null || value === '') continue;
+      if ((key === 'foto' || key === 'foto_ktp') && value instanceof File) {
+        data.append(key, value);
       }
+      if (key !== 'foto' && key !== 'foto_ktp') {
+        data.append(key, value);
+      }
+      
     }
+  
+  
 
     try {
       if (isEdit) {
-        await api.put(`/dashboard/updatependatang/${editId}/`, data, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
+        await api.put(`/dashboard/updatependatang/${id}/`, data);
+        navigate(`/${url}/data-pendatang`)
         toast.success('Pendatang berhasil diubah');
       } else {
-        await api.post('/dashboard/addpendatang/', data, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
+        await api.post('/dashboard/addpendatang/', data); 
         navigate(`/${url}/data-pendatang`)
         toast.success('Pendatang berhasil ditambahkan');
       }
@@ -171,6 +177,20 @@ const AddAndUpdatePendatang = ({isEdit, editId ,onClose}) => {
       />
     </div>
   ))}
+    {/* Select Jenis Kelamin */}
+    <div>
+    <label className="block mb-1 text-sm font-medium text-gray-700">Jenis Kelamin</label>
+    <select
+      name="jenis_kelamin"
+      value={formData.jenis_kelamin}
+      onChange={handleChange}
+      className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+    >
+      <option value="">Pilih Jenis Kelamin</option>
+      <option value="laki-laki">Laki-laki</option>
+      <option value="perempuan">Perempuan</option>
+    </select>
+  </div>
 
 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
   <WilayahSelector formData={formData} setFormData={setFormData} />
@@ -181,8 +201,7 @@ const AddAndUpdatePendatang = ({isEdit, editId ,onClose}) => {
 
     { label: 'RT', name: 'rt' },
     { label: 'RW', name: 'rw' },
-    { label: 'Latitude', name: 'latitude' },
-    { label: 'Longitude', name: 'longitude' },
+
   ].map((field) => (
     <div key={field.name}>
       <label className="block mb-1 text-sm font-medium text-gray-700">{field.label}</label>
@@ -197,20 +216,22 @@ const AddAndUpdatePendatang = ({isEdit, editId ,onClose}) => {
   ))}
 
 
-  {/* Select Jenis Kelamin */}
-  <div>
-    <label className="block mb-1 text-sm font-medium text-gray-700">Jenis Kelamin</label>
-    <select
-      name="jenis_kelamin"
-      value={formData.jenis_kelamin}
-      onChange={handleChange}
-      className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-    >
-      <option value="">Pilih Jenis Kelamin</option>
-      <option value="laki-laki">Laki-laki</option>
-      <option value="perempuan">Perempuan</option>
-    </select>
-  </div>
+      <input
+        type='hidden'
+        name="latitude"
+        value={formData.latitude}
+        onChange={handleChange}
+        className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+      />
+
+      <input
+        type='hidden'
+        name="longitude"
+        value={formData.longitude}
+        onChange={handleChange}
+        className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+      />
+
 
   {/* Alamat */}
   <div className="md:col-span-2">
@@ -284,13 +305,12 @@ const AddAndUpdatePendatang = ({isEdit, editId ,onClose}) => {
     >
       {isEdit ? 'Update' : 'Simpan'}
     </button>
-    <button
-      type="button"
+    <Link
+      to={`/penanggungjawab/data-pendatang`}
       className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold px-6 py-2 rounded-md transition"
-      onClick={() => onClose && onClose()}
     >
       Kembali
-    </button>
+    </Link>
   </div>
 </form>
 

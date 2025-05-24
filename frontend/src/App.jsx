@@ -82,6 +82,7 @@ function App() {
             <Route path="data-pendatang" element={<MainPendatang/>}/>
             <Route path="detail/pendatang/:id/" element={<DetailPendatang/>}/>
             <Route path="pendatang/" element={<AddAndUpdatePendatang/>}/>
+            <Route path="pendatang/edit/:id" element={<AddAndUpdatePendatang isEdit="edit" />} />
           </Route>
 
           {/* semua root allownay */}

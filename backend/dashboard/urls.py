@@ -9,6 +9,7 @@ urlpatterns = [
     path('addpendatang/', views.addPendatang, name="addPendatang"),
     path('pendatang/', views.getPendatang, name="getpandatang"),
     path('getAdminPendatang/', views.getAdminPendatang, name="getAdminPendatang"),
+    path('getAllPendatang/', views.getAllPendatang, name="getAllPendatang"),
     path('pendatang/<int:pk>/', views.detail_pendatang, name="detailPendatang"),
     path('updatependatang/<int:pk>/', views.update_pendatang, name="updatependatang"),
     path('tujuandatang/', views.tujuanDatang, name="tujuandatang"),

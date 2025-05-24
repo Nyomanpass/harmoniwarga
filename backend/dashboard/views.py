@@ -12,6 +12,9 @@ from django.db.models import Count
 from datetime import datetime
 from django.http import JsonResponse
 from django.db.models.functions import Lower
+import os
+from django.conf import settings
+
 
 
 class Pagination(LimitOffsetPagination):
@@ -165,7 +168,7 @@ def getAdminPendatang(request):
     limit = request.GET.get('limit', 2)
     tujuan_pendatang = request.GET.get('tujuan_id')
 
-    pendatang = Pendatang.objects.filter(nama_lengkap__icontains=search)
+    pendatang = Pendatang.objects.filter(nama_lengkap__icontains=search, verifikasi=True)
 
     if tujuan_pendatang:
         pendatang = pendatang.filter(tujuan_kedatangan_id=tujuan_pendatang)
@@ -178,6 +181,14 @@ def getAdminPendatang(request):
         return paginator.get_paginated_response(serializer.data)
     else:
         return Response({"message":"tidak ada data yang di temukan"}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getAllPendatang(request):
+    pendatang = Pendatang.objects.filter(verifikasi=True)
+    serializer = PendatangSerializer(pendatang, many=True)
+    return Response(serializer.data)
+    
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -220,25 +231,39 @@ def update_pendatang(request, pk):
         pendatang = Pendatang.objects.get(id=pk)
 
         if pendatang.penanggungjawab_id != user.id:
-            return Response({"error":"tidak memiliki izin mengubah data pendatang ini"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"error": "tidak memiliki izin mengubah data pendatang ini"}, status=status.HTTP_403_FORBIDDEN)
 
         no_ktp = request.data.get("no_ktp")
         if no_ktp:
             if not re.fullmatch(r"^\d{16}$", no_ktp):
-                return Response({"no_ktp":"nomor ktp harus 16 digit dan hanya berisi angka"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"no_ktp": "nomor ktp harus 16 digit dan hanya berisi angka"}, status=status.HTTP_400_BAD_REQUEST)
 
             if Pendatang.objects.filter(no_ktp=no_ktp).exclude(id=pendatang.id).exists():
-                return Response({'no_ktp':'nomor ktp sudah terdaftar, periksa kembali'}, status=status.HTTP_400_BAD_REQUEST)
-        
+                return Response({'no_ktp': 'nomor ktp sudah terdaftar, periksa kembali'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Cek dan handle perubahan gambar
+        if 'foto' in request.FILES:
+            if pendatang.foto:
+                old_foto_path = os.path.join(settings.MEDIA_ROOT, str(pendatang.foto))
+                if os.path.exists(old_foto_path):
+                    os.remove(old_foto_path)
+
+        if 'foto_ktp' in request.FILES:
+            if pendatang.foto_ktp:
+                old_ktp_path = os.path.join(settings.MEDIA_ROOT, str(pendatang.foto_ktp))
+                if os.path.exists(old_ktp_path):
+                    os.remove(old_ktp_path)
+
         serializer = PendatangSerializer(pendatang, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            print("Data valid:", serializer.validated_data)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        print(serializer.errors)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     except Pendatang.DoesNotExist:
-        return Response({"error":"pendatang tidak terdaftar"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error": "pendatang tidak terdaftar"}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 @api_view(['GET'])
@@ -290,7 +315,7 @@ def get_total_count(request):
     user = request.user
     total_kaling = User.objects.filter(role="kaling",  verifikasi=True).count()
     total_penanggungjawab = User.objects.filter(role="penanggungjawab",  verifikasi=True).count()
-    total_pendatang = Pendatang.objects.count()
+    total_pendatang = Pendatang.objects.filter(verifikasi=True).count()
     total_pendatang_pj =  Pendatang.objects.filter(penanggungjawab_id=user.id).count()
     
     return Response({

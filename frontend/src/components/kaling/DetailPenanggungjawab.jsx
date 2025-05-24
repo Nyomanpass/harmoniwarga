@@ -16,9 +16,8 @@ function DetailPenanggungjawab() {
     const url = localStorage.getItem('role')
     const [tujuanKedatangan, setTujuanKedatangan] = useState([]);
     const [selectedTujuanId, setSelectedTujuanId] = useState('');
-  
-  
-  
+    const urlbackend = "http://localhost:8000"
+
     useEffect(() => {
       fetchTujuanDatang();
     }, []);
@@ -94,7 +93,7 @@ function DetailPenanggungjawab() {
                 </h1>
                 <button 
                     onClick={() => window.history.back()}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm"
                 >
                     Kembali
                 </button>
@@ -173,10 +172,11 @@ function DetailPenanggungjawab() {
 
             <thead className="bg-gray-50 text-gray-500 border-b text-md font-bold">
                 <tr>
+                <th className="px-4 py-5">Image</th>
                 <th className="px-4 py-5">Nik</th>
                 <th className="px-4 py-5">Nama Lengkap</th>
                 <th className="px-4 py-5">Phone</th>
-                <th className="px-4 py-5">Alamat Asal</th>
+                <th className="px-4 py-5">Status</th>
                 <th className="px-4 py-5">Aksi</th>
                 </tr>
             </thead>
@@ -184,10 +184,27 @@ function DetailPenanggungjawab() {
                 {pendatangPj.length > 0 ? (
                 pendatangPj.map((pendatang, index) => (
                     <tr key={index} className="border-b hover:bg-gray-50">
+                    <td className="px-4 py-5">
+                        <img
+                            src={`${urlbackend}${pendatang.foto}`}
+                            alt="Foto Pendatang"
+                            className="w-16 h-16 object-cover rounded-full"
+                        />
+                    </td>
                     <td className="px-4 py-5 font-medium text-gray-800">{pendatang.no_ktp}</td>
                     <td className="px-4 py-5 text-gray-600">{pendatang.nama_lengkap}</td>
                     <td className="px-4 py-5 text-gray-600">{pendatang.phone}</td>
-                    <td className="px-4 py-5 text-gray-600">{pendatang.alamat_asal}</td>
+                    <td className="px-4 py-5">
+                        {pendatang.verifikasi ? (
+                            <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
+                            Diterima
+                            </span>
+                        ) : (
+                            <span className="bg-yellow-100 text-yellow-800 text-sm font-medium px-3 py-1 rounded-full">
+                            Pending
+                            </span>
+                        )}
+                    </td>
                     <td className="px-4 py-5">
                         <Link to={`/${url}/detail/pendatang/${pendatang.id}`} className="text-white bg-blue-500 px-5 py-3 rounded-lg">detail</Link> 
                     </td>

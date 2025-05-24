@@ -13,9 +13,12 @@ from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import make_password
+from django.conf import settings
 import re
 import random
 import string
+import os
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -251,3 +254,27 @@ def delete_user(request, pk):
         return Response({"message":"user berhasil dihapus"}, status=status.HTTP_200_OK)
     except:
         return Response({"message":"terjadi kesalaha coba lagi nanti"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_pendatang(request, pk):
+    try:
+        user = Pendatang.objects.get(id=pk)
+
+        # Hapus file foto jika ada
+        if user.foto and os.path.isfile(os.path.join(settings.MEDIA_ROOT, user.foto.name)):
+            os.remove(os.path.join(settings.MEDIA_ROOT, user.foto.name))
+
+        # Hapus file foto_ktp jika ada
+        if user.foto_ktp and os.path.isfile(os.path.join(settings.MEDIA_ROOT, user.foto_ktp.name)):
+            os.remove(os.path.join(settings.MEDIA_ROOT, user.foto_ktp.name))
+
+        user.delete()
+        return Response({"message": "Pendatang berhasil dihapus"}, status=status.HTTP_200_OK)
+        
+    except Pendatang.DoesNotExist:
+        return Response({"message": "Pendatang tidak ditemukan"}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        print(f"Error saat menghapus pendatang: {e}")
+        return Response({"message": "Terjadi kesalahan, coba lagi nanti"}, status=status.HTTP_400_BAD_REQUEST)

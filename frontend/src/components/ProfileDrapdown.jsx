@@ -7,6 +7,7 @@ function ProfileDrapdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(0); // Contoh jumlah notifikasi
   const [notifCountDua, setNotifCountDua] = useState(0); // Contoh jumlah notifikasi
+  const notif = notifCount + notifCountDua
   const email = localStorage.getItem('email')
   const url = localStorage.getItem('role')
 
@@ -43,9 +44,9 @@ function ProfileDrapdown() {
                 <Link to={`/${url}/notivication`}>
                     <div className="relative cursor-pointer">
                         <Bell className="w-6 h-6 text-gray-600 hover:text-gray-800 transition" />
-                        {notifCount > 0 && (
+                        {notif > 0 && (
                             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-semibold w-5 h-5 flex items-center justify-center rounded-full">
-                                {notifCount + notifCountDua}
+                                {notif}
                             </span>
                         )}
                     </div>

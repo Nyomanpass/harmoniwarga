@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import api from "../../api";
 import { useEffect, useState } from "react";
+import MapPicker from "../MapPicker";
 
 // Fungsi format tanggal ke format lokal Indonesia
 const formatDate = (dateStr) => {
@@ -115,6 +116,15 @@ function DetailPendatang() {
                     <DetailItem label="Phone" value={pendatang.phone} />
                     <DetailItem label="Deskripsi" value={pendatang.deskripsi} />
                     <DetailItem label="Penanggungjawab" value={pendatang.penanggungjawab_nama} />
+                    {/* Tampilkan Peta */}
+                    {pendatang.latitude && pendatang.longitude && (
+                    <MapPicker
+                        latitude={pendatang.latitude}
+                        longitude={pendatang.longitude}
+                        readOnly={true}
+                    />
+                    )}
+
                 </div>
             </div>
         </div>

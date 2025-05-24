@@ -12,6 +12,7 @@ urlpatterns = [
     path('listverifikasi/', views.get_verifikasi_user, name="verifikasiuser"),
     path('pendatangverifikasi/', views.get_verifikasi_pendatang, name="pendatangverifikasi"),
     path('deleteuser/<int:pk>/', views.delete_user, name="deleteuser"),
+    path('deletependatang/<int:pk>/', views.delete_pendatang, name="deletependatang"),
     path('verifiuser/<int:pk>/', views.verifi_user, name="verifiuser"),
     path('verifipendatang/<int:pk>/', views.verifi_pendatang, name="verifipendatang"),
     path('updateProfile/', views.updateProfile, name="updateProfile")

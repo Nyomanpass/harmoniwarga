@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { User, Users } from "lucide-react";
+import { User, Users, CheckCircle, Eye, Trash2 } from "lucide-react";
+import { Link } from 'react-router-dom'
 import api from "../api";
 
 
@@ -9,6 +10,7 @@ function Notivication() {
   const [users, setUsers] = useState([]);
   const [pendatang, setPendatang] = useState([])
   const [loading, setLoading] = useState(null);
+  const url = localStorage.getItem('role')
 
 
   const today = new Date().toLocaleDateString("id-ID", {
@@ -41,29 +43,42 @@ function Notivication() {
     fetchPendatang();
   },[])
   
+
   const verifiUser = async (id, category) => {
     setLoading(id); 
-    try{
-        await api.put(`/api/${category}/${id}/`);
-        setUsers(users.filter((user)=>user.id !== id))
-        toast.success("berhasil diverifikasi!");
-    }catch(error){
-        console.log("error to verifiuser")
-    }finally {
-        setLoading(null); // Selesai loading
+    try {
+      await api.put(`/api/${category}/${id}/`);
+  
+      if (category === 'verifiuser') {
+        setUsers(users.filter((user) => user.id !== id));
+      } else if (category === 'verifipendatang') {
+        setPendatang(pendatang.filter((item) => item.id !== id));
+      }
+  
+      toast.success("Berhasil diverifikasi!");
+    } catch (error) {
+      console.log("Error saat verifikasi:", error);
+    } finally {
+      setLoading(null);
     }
-  }
- 
-
-  const deleteuser = async (id) =>{
-    try{
-        await api.delete(`/api/deleteuser/${id}/`)
-        setUsers(users.filter((user)=>user.id !== id))
-        toast.success("User berhasil dihapus!");
-    }catch(error){
-        console.log("error detele user")
+  };
+  
+  const deleteuser = async (id, category) => {
+    try {
+      await api.delete(`/api/${category}/${id}/`);
+  
+      if (category === 'deleteuser') {
+        setUsers(users.filter((user) => user.id !== id));
+      } else if (category === 'deletependatang') {
+        setPendatang(pendatang.filter((item) => item.id !== id));
+      }
+  
+      toast.success("Data berhasil dihapus!");
+    } catch (error) {
+      console.log("Error saat menghapus:", error);
     }
-  }
+  };
+  
 
 
 
@@ -117,26 +132,54 @@ function Notivication() {
             ) : (
               users.map((user) => (
                 <tr key={user.id} className="border hover:bg-gray-50">
-                  <td className="p-3">{user.no_ktp}</td>
+                  <td className="p-3">{user.nik}</td>
                   <td className="p-3">{user.email}</td>
                   <td className="p-3">{user.role === "penanggungjawab" ? "Penanggung Jawab" : user.role === "kaling" ? "Kepala Lingkungan" : user.role}</td>
                   <td className="p-3 flex justify-center space-x-2">
+                    {/* Tombol Verifikasi (jika belum diverifikasi) */}
                     {!user.verified && (
-                      <button 
-                          onClick={() => verifiUser(user.id, 'verifiuser')} 
-                          className="bg-green-500 rounded-lg text-white px-3 py-1 mr-2"
-                          disabled={loading === user.id}
+                      <button
+                        onClick={() => verifiUser(user.id, 'verifiuser')}
+                        disabled={loading === user.id}
+                        title="Verifikasi"
+                        className={`rounded-full p-2 transition ${
+                          loading === user.id
+                            ? 'bg-gray-300 cursor-not-allowed'
+                            : 'bg-green-500 hover:bg-green-600 text-white'
+                        }`}
                       >
-                          {loading === user.id ? "Loading..." : "Verifikasi"}
+                        {loading === user.id ? (
+                          <span className="text-xs">...</span>
+                        ) : (
+                          <CheckCircle size={20} />
+                        )}
                       </button>
                     )}
-                    <button
-                      onClick={() => deleteuser(user.id)}
-                      className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+
+                    {/* Tombol Detail */}
+                    <Link
+                      onClick={() => handleView(user.id)}
+                      title="Lihat Detail"
+                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 transition"
                     >
-                      Hapus
-                    </button>
+                      <Eye size={20} />
+                    </Link>
+
+                    {/* Tombol Hapus */}
+                    <button
+                        onClick={() => {
+                          if (window.confirm("Apakah yakin ingin menghapus data ini?")) {
+                            deleteuser(user.id, 'deleteuser');
+                          }
+                        }}
+                        title="Hapus"
+                        className="bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+
                   </td>
+
                 </tr>
               ))
             )}
@@ -169,22 +212,51 @@ function Notivication() {
                   <td className="p-3">{user.nama_lengkap}</td>
                   <td className="p-3">{user.alamat_sekarang}</td>
                   <td className="p-3 flex justify-center space-x-2">
+                    {/* Tombol Verifikasi (jika belum diverifikasi) */}
                     {!user.verified && (
-                      <button 
-                          onClick={() => verifiUser(user.id, 'verifipendatang')} 
-                          className="bg-green-500 rounded-lg text-white px-3 py-1 mr-2"
-                          disabled={loading === user.id}
+                      <button
+                        onClick={() => verifiUser(user.id, 'verifipendatang')}
+                        disabled={loading === user.id}
+                        title="Verifikasi"
+                        className={`rounded-full p-2 transition ${
+                          loading === user.id
+                            ? 'bg-gray-300 cursor-not-allowed'
+                            : 'bg-green-500 hover:bg-green-600 text-white'
+                        }`}
                       >
-                          {loading === user.id ? "Loading..." : "Verifikasi"}
+                        {loading === user.id ? (
+                          <span className="text-xs">...</span>
+                        ) : (
+                          <CheckCircle size={20} />
+                        )}
                       </button>
                     )}
-                    <button
-                      onClick={() => deleteuser(user.id)}
-                      className="bg-red-500 text-white rounded-lg px-4 py-2  hover:bg-red-600 transition"
+
+                    {/* Tombol Detail */}
+                    <Link
+                      onClick={() => handleView(user.id)}
+                      to={`/${url}/detail/pendatang/${user.id}`}
+                      title="Lihat Detail"
+                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 transition"
                     >
-                      Hapus
+                      <Eye size={20} />
+                    </Link>
+
+                    {/* Tombol Hapus */}
+                    <button
+                      onClick={() => {
+                        if (window.confirm("Apakah yakin ingin menghapus data ini?")) {
+                          deleteuser(user.id, 'deletependatang');
+                        }
+                      }}
+                      title="Hapus"
+                      className="bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition"
+                    >
+                      <Trash2 size={20} />
                     </button>
+
                   </td>
+
                 </tr>
               ))
             )}

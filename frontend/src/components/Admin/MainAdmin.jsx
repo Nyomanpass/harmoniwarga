@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import api from "../../api";
 import { PieChart, Pie, Cell, Legend } from "recharts";
+import MapPicker from "../MapPicker";
 
 const COLORS = ['#0088FE', '#FF8042', '#00C49F', '#FFBB28', '#A28EF5'];
 
@@ -14,8 +15,10 @@ function MainAdmin() {
   const [pendatangJenis, setPendatangJenis] = useState([])
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [dataPendatang, setDataPendatang] = useState([])
+  const [dataPendatangList, setDataPendatangList] = useState([])
   const [tujuanData, setTujuanData] = useState([])
   const url = localStorage.getItem('role')
+
 
 
   useEffect(() => {
@@ -57,6 +60,25 @@ function MainAdmin() {
       }
     }
 
+    const fetchKaling = async () => {
+      try{
+          const res = await api.get(`/dashboard/getAllPendatang/`)
+          if(res.data.count === 0){
+              setDataPendatangList([])
+          }else{
+              setDataPendatangList(res.data)
+          }
+          setTotalData(res.data.count)
+      }catch(error){
+          if (error.response && error.response.status === 404){
+              setDataPendatangList([])
+              setTotalData(0)
+          }
+          console.log(error)
+      }
+    }
+
+    fetchKaling()
     fetchPendatangPerBulan();
     fetchPendatangJenis();
     fetchData();
@@ -135,19 +157,14 @@ function MainAdmin() {
 
       
       <div className="grid grid-cols-2 gap-5 mt-5">
-  {/* Grafik Distribusi Pendatang Berdasarkan Jenis Kelamin */}
-  <div className="bg-white p-6 rounded shadow-md  flex-3/4 min-w-[300px]">
-    <h3 className="text-lg font-bold mb-3">Distribusi Pendatang Berdasarkan Jenis Kelamin</h3>
-    <ResponsiveContainer width="100%" height={250}>
-      <BarChart data={pendatangJenis}>
-        <XAxis dataKey="jenis_kelamin_lower" />
-        <YAxis />
-        <Tooltip />
-        <Bar dataKey="total" fill="#3b82f6" radius={[10, 10, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
-  </div>
-
+      <div className="bg-white p-6 pb-14 rounded shadow-md h-[400px] flex-1 min-w-[300px]">
+        <h3 className="text-lg font-bold mb-3">Distribusi tujuan pendatang</h3>
+        <MapPicker
+          onLocationChange={(lat, lng) => console.log('Lokasi baru:', lat, lng)}
+          readOnly={true}
+          pendatangList={dataPendatangList} // tetap bisa tampil marker pendatang
+        />
+      </div>
   {/* Grafik Distribusi Pendatang per Wilayah */}
   <div className="bg-white p-6 pb-14 rounded shadow-md h-[400px] flex-1 min-w-[300px]">
   <h3 className="text-lg font-bold mb-3">Distribusi wilayah pendatang terbanyak</h3>
@@ -201,6 +218,29 @@ function MainAdmin() {
     </PieChart>
   </ResponsiveContainer>
 </div>
+
+<div className="bg-white p-6 rounded shadow-md flex-3/4 min-w-[300px]">
+        <h3 className="text-lg font-bold mb-3">Distribusi Pendatang Berdasarkan Jenis Kelamin</h3>
+        <ResponsiveContainer width="100%" height={250}>
+          <PieChart>
+            <Pie
+              data={pendatangJenis}
+              dataKey="total"
+              nameKey="jenis_kelamin_lower"
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+              fill="#8884d8"
+              label
+            >
+              {pendatangJenis.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
 
 </div>
 
