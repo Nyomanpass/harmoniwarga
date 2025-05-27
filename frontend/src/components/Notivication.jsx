@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { User, Users, CheckCircle, Eye, Trash2 } from "lucide-react";
+import { User, Users, CheckCircle, Eye, Trash2, XCircle } from "lucide-react";
 import { Link } from 'react-router-dom'
 import api from "../api";
 
@@ -10,6 +10,9 @@ function Notivication() {
   const [users, setUsers] = useState([]);
   const [pendatang, setPendatang] = useState([])
   const [loading, setLoading] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [rejectId, setRejectId] = useState(null);
+  const [alasanTolak, setAlasanTolak] = useState('')
   const url = localStorage.getItem('role')
 
 
@@ -78,6 +81,30 @@ function Notivication() {
       console.log("Error saat menghapus:", error);
     }
   };
+
+  const handleReject = async (id) => {
+    if (!alasanTolak.trim()) {
+      toast.error("Alasan penolakan wajib diisi.");
+      return;
+    }
+  
+    try {
+      await api.put(`/api/tolakpendatang/${id}/`, {
+        alasan_tolak: alasanTolak
+      });
+  
+      toast.success("Data berhasil ditolak!, pesan sudah terkirim");
+    } catch (error) {
+      console.error(error);
+      toast.error("Gagal menolak data.");
+    } finally {
+      setShowRejectModal(false);
+      setRejectId(null);
+      setAlasanTolak('');
+    }
+  };
+  
+  
   
 
 
@@ -117,6 +144,7 @@ function Notivication() {
           <thead className="bg-gray-100">
             <tr>
               <th className="border p-3 text-left">Nik</th>
+              <th className="border p-3 text-left">Nama Lengkap</th>
               <th className="border p-3 text-left">Email</th>
               <th className="border p-3 text-left">Level</th>
               <th className="border p-3 text-center">Aksi</th>
@@ -133,6 +161,7 @@ function Notivication() {
               users.map((user) => (
                 <tr key={user.id} className="border hover:bg-gray-50">
                   <td className="p-3">{user.nik}</td>
+                  <td className="p-3">{user.nama_lengkap}</td>
                   <td className="p-3">{user.email}</td>
                   <td className="p-3">{user.role === "penanggungjawab" ? "Penanggung Jawab" : user.role === "kaling" ? "Kepala Lingkungan" : user.role}</td>
                   <td className="p-3 flex justify-center space-x-2">
@@ -158,6 +187,7 @@ function Notivication() {
 
                     {/* Tombol Detail */}
                     <Link
+                      to={`/${url}/detail/${user.role}/${user.id}`}
                       onClick={() => handleView(user.id)}
                       title="Lihat Detail"
                       className="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 transition"
@@ -195,6 +225,7 @@ function Notivication() {
               <th className="border p-3 text-left">Nik</th>
               <th className="border p-3 text-left">Nama Lengkap</th>
               <th className="border p-3 text-left">Alamat Sekarang</th>
+              <th className="border p-3 text-left">Status</th>
               <th className="border p-3 text-center">Aksi</th>
             </tr>
           </thead>
@@ -211,6 +242,21 @@ function Notivication() {
                   <td className="p-3">{user.no_ktp}</td>
                   <td className="p-3">{user.nama_lengkap}</td>
                   <td className="p-3">{user.alamat_sekarang}</td>
+                  <td className="px-4 py-5">
+                        {user.verifikasi === true ? (
+                            <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
+                            Diterima
+                            </span>
+                        ) : user.verifikasi === false ? (
+                            <span className="bg-yellow-100 text-yellow-800 text-sm font-medium px-3 py-1 rounded-full">
+                            Pending
+                            </span>
+                        ) : (
+                            <span className="bg-red-100 text-red-800 text-sm font-medium px-3 py-1 rounded-full">
+                            Ditolak
+                            </span>
+                        )}
+                    </td>
                   <td className="p-3 flex justify-center space-x-2">
                     {/* Tombol Verifikasi (jika belum diverifikasi) */}
                     {!user.verified && (
@@ -231,6 +277,20 @@ function Notivication() {
                         )}
                       </button>
                     )}
+
+                    {!user.verified && (
+                      <button
+                        onClick={() =>{
+                          setShowModal(true)
+                          setRejectId(user.id);
+                        }} // buka modal form
+                        title="Tolak"
+                        className="bg-yellow-600 hover:bg-yellow-700 text-white rounded-full p-2 transition"
+                      >
+                        <XCircle size={20} />
+                      </button>
+                    )}
+
 
                     {/* Tombol Detail */}
                     <Link
@@ -263,8 +323,38 @@ function Notivication() {
           </tbody>
         </table>
       </div>
-
-      
+      {showModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+          <h2 className="text-lg font-semibold mb-4">Tolak Verifikasi</h2>
+          <textarea
+            className="w-full border border-gray-300 rounded p-2 mb-4"
+            rows={4}
+            value={alasanTolak}
+            onChange={(e) => setAlasanTolak(e.target.value)}
+            placeholder="Masukkan alasan penolakan..."
+          />
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => {
+                setShowModal(false);
+                setRejectId(null)
+                setAlasanTolak('');
+              }}
+              className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
+            >
+              Batal
+            </button>
+            <button
+              onClick={() => {handleReject(rejectId); setShowModal(false);}}
+              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded"
+            >
+              Kirim Penolakan
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </div>
   );
 }

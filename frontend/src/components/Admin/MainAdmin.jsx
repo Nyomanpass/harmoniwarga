@@ -158,11 +158,11 @@ function MainAdmin() {
       
       <div className="grid grid-cols-2 gap-5 mt-5">
       <div className="bg-white p-6 pb-14 rounded shadow-md h-[400px] flex-1 min-w-[300px]">
-        <h3 className="text-lg font-bold mb-3">Distribusi tujuan pendatang</h3>
+        <h3 className="text-lg font-bold mb-3">Distribusi wilayah pendatang</h3>
         <MapPicker
           onLocationChange={(lat, lng) => console.log('Lokasi baru:', lat, lng)}
           readOnly={true}
-          pendatangList={dataPendatangList} // tetap bisa tampil marker pendatang
+          pendatangList={dataPendatangList}
         />
       </div>
   {/* Grafik Distribusi Pendatang per Wilayah */}

@@ -14,6 +14,7 @@ from django.core.mail import send_mail
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import make_password
 from django.conf import settings
+from django.db.models import Q
 import re
 import random
 import string
@@ -183,7 +184,7 @@ def get_verifikasi_user(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_verifikasi_pendatang(request):
-    pendatangs = Pendatang.objects.filter(verifikasi=False)
+    pendatangs = Pendatang.objects.filter(Q(verifikasi=False) | Q(verifikasi__isnull=True))
     serializer = PendatangSerializer(pendatangs, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -199,12 +200,32 @@ def generate_password():
 @permission_classes([IsAuthenticated])
 def verifi_pendatang(request, pk):
     try:
-        pendatang = Pendatang.objects.get(id=pk, verifikasi=False)
+        pendatang = Pendatang.objects.get(Q(id=pk) & (Q(verifikasi=False) | Q(verifikasi__isnull=True)))
         pendatang.verifikasi = True
+        pendatang.alasan_tolak = None
         pendatang.save()
         return Response({"message": "Pendatang berhasil diverifikasi."}, status=status.HTTP_200_OK)
     except Pendatang.DoesNotExist:
         return Response({"message": "Pendatang tidak ditemukan atau sudah diverifikasi."}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['PUT'])
+def tolak_pendatang(request, pk):
+    try:
+        pendatang = Pendatang.objects.get(pk=pk)
+    except Pendatang.DoesNotExist:
+        return Response({"error": "Pendatang tidak ditemukan."}, status=status.HTTP_404_NOT_FOUND)
+
+    alasan = request.data.get("alasan_tolak", "").strip()
+
+    if not alasan:
+        return Response({"error": "Alasan penolakan harus diisi."}, status=status.HTTP_400_BAD_REQUEST)
+
+    pendatang.alasan_tolak = alasan
+    pendatang.verifikasi = None
+    pendatang.save()
+
+    serializer = PendatangSerializer(pendatang)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['PUT'])

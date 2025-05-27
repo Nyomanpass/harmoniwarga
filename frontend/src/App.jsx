@@ -63,6 +63,7 @@ function App() {
             <Route path="detail/pendatang/:id/" element={<DetailPendatang/>}/>
             <Route path="detail/penanggungjawab/:id/" element={<DetailPenanggungjawab/>}/>
             <Route path="detail/kaling/:id/" element={<DetailKaling/>}/>
+            <Route path="pendatang/edit/:id" element={<AddAndUpdatePendatang isEdit="edit" />} />
           </Route>
 
           {/* route unutk kaling */}
@@ -74,6 +75,7 @@ function App() {
             <Route path="data-pendatang" element={<AdminPendatang/>}/>
             <Route path="detail/pendatang/:id/" element={<DetailPendatang/>}/>
             <Route path="detail/penanggungjawab/:id/" element={<DetailPenanggungjawab/>}/>
+            <Route path="pendatang/edit/:id" element={<AddAndUpdatePendatang isEdit="edit" />} />
           </Route>
 
           <Route path='/penanggungjawab/*' element={<ProtectedRoute allowedRoles={['penanggungjawab']}><Dashboard/></ProtectedRoute>}>

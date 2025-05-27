@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Trash2, Pencil} from "lucide-react";
 import { useState, useEffect } from "react";
 import api from "../../api";
 import { Link } from "react-router-dom";
@@ -90,13 +90,40 @@ function AdminPenanggungjawab() {
             </thead>
             <tbody>
                 {dataKaling.length > 0 ? (
-                dataKaling.map((kaling, index) => (
+                dataKaling.map((pj, index) => (
                     <tr key={index} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-5 font-medium text-gray-800">{kaling.nik}</td>
-                    <td className="px-4 py-5 text-gray-600">{kaling.nama_lengkap}</td>
-                    <td className="px-4 py-5 text-gray-600">{kaling.phone}</td>
-                    <td className="px-4 py-5 text-gray-600">{kaling.email}</td>
-                    <td className="px-4 py-5"><Link to={`/${url}/detail/penanggungjawab/${kaling.id}`} className="text-white bg-blue-500 px-5 py-3 rounded-lg">detail</Link> </td>
+                    <td className="px-4 py-5 font-medium text-gray-800">{pj.nik}</td>
+                    <td className="px-4 py-5 text-gray-600">{pj.nama_lengkap}</td>
+                    <td className="px-4 py-5 text-gray-600">{pj.phone}</td>
+                    <td className="px-4 py-5 text-gray-600">{pj.email}</td>
+                    <td className="px-4 py-5 flex gap-2">
+                        <Link
+                            to={`/${url}/detail/penanggungjawab/${pj.id}`}
+                            title="Lihat Detail"
+                            className="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 transition"
+                        >
+                            <Eye size={20} />
+                        </Link>
+                        <Link
+                            to={`/${url}/pendatang/edit/${pj.id}`}
+                            title="Edit Pendatang"
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white rounded-full p-2 transition"
+                        >
+                            <Pencil size={20} />
+                        </Link>
+
+                        <button
+                        onClick={() => {
+                          if (window.confirm("Apakah yakin ingin menghapus data ini?")) {
+                            deletependatang(pj.id);
+                          }
+                        }}
+                        title="Hapus"
+                        className="bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    </td>
                     </tr>
                 ))
                 ) : (

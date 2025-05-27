@@ -20,7 +20,7 @@ class PendatangSerializer(serializers.ModelSerializer):
             'tujuan_kedatangan', 'tujuan_kedatangan_nama', 'tanggal_datang',
             'deskripsi', 'phone', 
             'penanggungjawab_id', 'penanggungjawab_nama',
-            'foto', 'foto_ktp', 'verifikasi'
+            'foto', 'foto_ktp', 'verifikasi', 'alasan_tolak'
         ]
 
 

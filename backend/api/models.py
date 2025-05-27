@@ -115,7 +115,8 @@ class Pendatang(models.Model):
     kelurahan_asal = models.CharField(max_length=100, blank=True, null=True)
     rt = models.CharField(max_length=10, blank=True, null=True)
     rw = models.CharField(max_length=10, blank=True, null=True)
-    verifikasi = models.BooleanField(default=False)
+    verifikasi = models.BooleanField(default=False, null=True)
+    alasan_tolak = models.CharField(max_length=100, blank=True, null=True)
 
     alamat_sekarang = models.TextField(blank=True, null=True)
     latitude = models.FloatField(blank=True, null=True)

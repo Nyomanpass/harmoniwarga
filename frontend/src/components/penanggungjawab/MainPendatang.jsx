@@ -123,7 +123,7 @@ function MainPendatang() {
                 ))}
             </select>
 
-            <Link to={`/${url}/pendatang`} className="px-5 py-2 text-white rounded-lg bg-green-500">
+            <Link to={`/${url}/pendatang`} className="px-5 py-2 text-white rounded-lg bg-green-700">
                 tambah pendatang
             </Link>
 
@@ -139,6 +139,7 @@ function MainPendatang() {
                 <th className="px-4 py-5">Nama Lengkap</th>
                 <th className="px-4 py-5">Phone</th>
                 <th className="px-4 py-5">Status</th>
+                <th className="px-4 py-5">Alasan</th>
                 <th className="px-4 py-5">Aksi</th>
                 </tr>
             </thead>
@@ -157,15 +158,22 @@ function MainPendatang() {
                     <td className="px-4 py-5 text-gray-600">{pendatang.nama_lengkap}</td>
                     <td className="px-4 py-5 text-gray-600">{pendatang.phone}</td>
                     <td className="px-4 py-5">
-                        {pendatang.verifikasi ? (
+                        {pendatang.verifikasi === true ? (
                             <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
                             Diterima
                             </span>
-                        ) : (
+                        ) : pendatang.verifikasi === false ? (
                             <span className="bg-yellow-100 text-yellow-800 text-sm font-medium px-3 py-1 rounded-full">
                             Pending
                             </span>
+                        ) : (
+                            <span className="bg-red-100 text-red-800 text-sm font-medium px-3 py-1 rounded-full">
+                            Ditolak
+                            </span>
                         )}
+                    </td>
+                    <td className="px-4 py-5 text-gray-600">
+                        {pendatang.alasan_tolak ? pendatang.alasan_tolak : "-"}
                     </td>
                     <td className="px-4 py-5 flex gap-2">
                         <Link

@@ -1,9 +1,10 @@
 
 import React from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Trash2, Pencil} from "lucide-react";
 import { useState, useEffect } from "react";
 import api from "../../api";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 function AdminPendatang() {
   const [dataKaling, setDataKaling] = useState([])
@@ -69,6 +70,16 @@ function AdminPendatang() {
     }
   }
 
+  const deletependatang = async (id) =>{
+    try{
+        await api.delete(`/api/deletependatang/${id}/`)
+        setDataKaling(dataKaling.filter((user)=>user.id !== id))
+        toast.success("pendatang berhasil dihapus!");
+    }catch(error){
+        console.log("error detele user")
+    }
+  }
+
   return (
     <>
     <div className="p-6">
@@ -121,26 +132,67 @@ function AdminPendatang() {
                 <th className="px-4 py-5">Nik</th>
                 <th className="px-4 py-5">Nama Lengkap</th>
                 <th className="px-4 py-5">Phone</th>
+                <th className="px-4 py-5">Status</th>
                 <th className="px-4 py-5">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 {dataKaling.length > 0 ? (
-                dataKaling.map((kaling, index) => (
+                dataKaling.map((pendatang, index) => (
                     <tr key={index} className="border-b hover:bg-gray-50">
                    <td className="px-4 py-5">
                         <img
-                            src={`${urlbackend}${kaling.foto}`}
+                            src={`${urlbackend}${pendatang.foto}`}
                             alt="Foto Pendatang"
                             className="w-16 h-16 object-cover rounded-full"
                         />
                     </td>
 
-                    <td className="px-4 py-5 font-medium text-gray-800">{kaling.no_ktp}</td>
-                    <td className="px-4 py-5 text-gray-600">{kaling.nama_lengkap}</td>
-                    <td className="px-4 py-5 text-gray-600">{kaling.phone}</td>
+                    <td className="px-4 py-5 font-medium text-gray-800">{pendatang.no_ktp}</td>
+                    <td className="px-4 py-5 text-gray-600">{pendatang.nama_lengkap}</td>
+                    <td className="px-4 py-5 text-gray-600">{pendatang.phone}</td>
                     <td className="px-4 py-5">
-                        <Link to={`/${url}/detail/pendatang/${kaling.id}`} className="text-white bg-blue-500 px-5 py-3 rounded-lg">detail</Link> 
+                        {pendatang.verifikasi === true ? (
+                            <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
+                            Diterima
+                            </span>
+                        ) : pendatang.verifikasi === false ? (
+                            <span className="bg-yellow-100 text-yellow-800 text-sm font-medium px-3 py-1 rounded-full">
+                            Pending
+                            </span>
+                        ) : (
+                            <span className="bg-red-100 text-red-800 text-sm font-medium px-3 py-1 rounded-full">
+                            Ditolak
+                            </span>
+                        )}
+                    </td>
+                    <td className="px-4 py-5 flex gap-2">
+                        <Link
+                            to={`/${url}/detail/pendatang/${pendatang.id}`}
+                            title="Lihat Detail"
+                            className="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 transition"
+                        >
+                            <Eye size={20} />
+                        </Link>
+                        <Link
+                            to={`/${url}/pendatang/edit/${pendatang.id}`}
+                            title="Edit Pendatang"
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white rounded-full p-2 transition"
+                        >
+                            <Pencil size={20} />
+                        </Link>
+
+                        <button
+                        onClick={() => {
+                          if (window.confirm("Apakah yakin ingin menghapus data ini?")) {
+                            deletependatang(pendatang.id);
+                          }
+                        }}
+                        title="Hapus"
+                        className="bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition"
+                      >
+                        <Trash2 size={20} />
+                      </button>
                     </td>
                     </tr>
                 ))

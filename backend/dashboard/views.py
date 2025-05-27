@@ -116,6 +116,7 @@ def addPendatang(request):
     try:  
         data = request.data.copy()
         data['penanggungjawab_id'] = user.id
+        data['verifikasi'] = False
 
         no_ktp = data.get("no_ktp")
         if no_ktp:
@@ -225,13 +226,12 @@ def getPendatangPj(request, pk):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_pendatang(request, pk):
-    user = request.user
-
+   
     try:
         pendatang = Pendatang.objects.get(id=pk)
 
-        if pendatang.penanggungjawab_id != user.id:
-            return Response({"error": "tidak memiliki izin mengubah data pendatang ini"}, status=status.HTTP_403_FORBIDDEN)
+        # if pendatang.penanggungjawab_id != user.id:
+        #     return Response({"error": "tidak memiliki izin mengubah data pendatang ini"}, status=status.HTTP_403_FORBIDDEN)
 
         no_ktp = request.data.get("no_ktp")
         if no_ktp:

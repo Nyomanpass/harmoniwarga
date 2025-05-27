@@ -1,8 +1,8 @@
 import React from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import api from "../../api";
 import { Link } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Eye, Trash2, Pencil} from "lucide-react";
 
 function AdminKaling() {
   const [dataKaling, setDataKaling] = useState([])
@@ -10,7 +10,7 @@ function AdminKaling() {
   const [limit, setLimit] = useState(10)
   const [offset, setOffset] = useState(0)
   const [totalData, setTotalData] = useState(0)
-
+  const url = localStorage.getItem('role')
 
   useEffect(()=>{
     fetchKaling()
@@ -105,7 +105,34 @@ function AdminKaling() {
                             {kaling.status_kaling === "aktif" ? "Aktif" : "Tidak Aktif"}
                         </span>
                     </td>
-                    <td className="px-4 py-5"><Link to={`/admin/detail/kaling/${kaling.id}`} className="text-white bg-blue-500 px-5 py-3 rounded-lg">detail</Link> </td>
+                    <td className="px-4 py-5 flex gap-2">
+                        <Link
+                            to={`/${url}/detail/kaling/${kaling.id}`}
+                            title="Lihat Detail"
+                            className="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 transition"
+                        >
+                            <Eye size={20} />
+                        </Link>
+                        <Link
+                            to={`/${url}/pendatang/edit/${kaling.id}`}
+                            title="Edit Pendatang"
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white rounded-full p-2 transition"
+                        >
+                            <Pencil size={20} />
+                        </Link>
+
+                        <button
+                        onClick={() => {
+                          if (window.confirm("Apakah yakin ingin menghapus data ini?")) {
+                            deletependatang(kaling.id);
+                          }
+                        }}
+                        title="Hapus"
+                        className="bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    </td>
                     </tr>
                 ))
                 ) : (
